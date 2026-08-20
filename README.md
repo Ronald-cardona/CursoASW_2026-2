@@ -89,7 +89,7 @@ Guarde una captura de la pestaña Network como:
 evidencias/network.png
 ```
 
-Inclúyala aquí:
+Inclúyala aquí: ![Recursos cargados por la aplicación](evidencias/network.png)
 
 ``` markdown
 ![Recursos cargados por la aplicación](evidencias/network.png)
@@ -138,7 +138,7 @@ Guarde una captura de los detalles de la solicitud como:
 evidencias/request.png
 ```
 
-Inclúyala en el informe:
+Inclúyala en el informe: ![Análisis de la solicitud HTTP](evidencias/request.png)
 
 ``` markdown
 ![Análisis de la solicitud HTTP](evidencias/request.png)
@@ -208,7 +208,7 @@ Guarde la captura como:
 evidencias/dom.png
 ```
 
-Inclúyala aquí:
+Inclúyala aquí:![Inspección y modificación del DOM](evidencias/dom.png)
 
 ``` markdown
 ![Inspección y modificación del DOM](evidencias/dom.png)
@@ -274,7 +274,7 @@ Guarde la captura como:
 evidencias/interaccion.png
 ```
 
-Inclúyala aquí:
+Inclúyala aquí:![Interacción observada en Network](evidencias/interaccion.png)
 
 ``` markdown
 ![Interacción observada en Network](evidencias/interaccion.png)
