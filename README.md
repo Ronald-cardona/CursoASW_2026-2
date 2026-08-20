@@ -70,15 +70,16 @@ documento HTML, CSS, JavaScript, imágenes, fuentes u otros.
 
 Complete la tabla:
 
-  Recurso   Tipo   Dominio     Tamaño
-  --------- ------ --------- --------
-                             
-                             
-                             
-                             
+  Recurso   Tipo               Dominio              Tamaño
+  --------- ------     ------------------------    --------
+  HTML      script         www.itm.edu.co           479 kb 
+  CSS       stylesheet     www.itm.edu.co           124 kb  
+  HTML      Script         www.itm.edu.co            101 kb
+  IMG       GIF            www.itm.edu.co             182 kb
+  DOC       document       www.itm.edu.co            92 kb
                              
 
-**Total de solicitudes observadas:** `_____`
+**Total de solicitudes observadas:** `__5___`
 
 ## Evidencia
 
@@ -99,6 +100,7 @@ Inclúyala aquí:
 **¿Por qué una sola URL puede generar múltiples solicitudes HTTP?**
 
 > Escriba aquí su respuesta.
+Una sola URL puede generar múltiples solicitudes HTTP porque la página necesita cargar diferentes recursos, como archivos CSS, JavaScript, imágenes, fuentes y otros datos. Por eso, al abrir una página, el navegador realiza varias solicitudes al servidor para obtener todos los elementos necesarios para mostrarla correctamente.
 
 ------------------------------------------------------------------------
 
@@ -111,12 +113,12 @@ Identifique la información solicitada a continuación.
 
   Elemento              Resultado
   --------------------- -----------
-  URL                   
-  Método HTTP           
-  Código de estado      
-  Host / dominio        
-  Tipo de recurso       
-  Tiempo de respuesta   
+  URL                   https://www.itm.edu.co/formatos-institucionales/
+  Método HTTP           GET
+  Código de estado      200 OK
+  Host / dominio        www.itm.edu.co
+  Tipo de recurso       document
+  Tiempo de respuesta   1.19 s
 
 ## Flujo que se está observando
 
@@ -148,10 +150,14 @@ Inclúyala en el informe:
 
 > Escriba aquí su respuesta.
 
+El recurso solicitado fue : formatos-institucionales y es de tipo: document 
+
 **¿Qué información permite determinar si la solicitud fue atendida
 correctamente?**
 
 > Escriba aquí su respuesta.
+
+lo que nos permite saber si la solicitud fue atendida de manera correcta es el status code, que en este caso está asi: 200 ok. 
 
 ------------------------------------------------------------------------
 
@@ -176,13 +182,13 @@ Utilizando **Elementos / Elements**:
 
 ## Resultados
 
-**Elemento seleccionado:** `____________________________`
+**Elemento seleccionado:** `Titulo`
 
-**Etiqueta HTML:** `____________________________`
+**Etiqueta HTML:** `<h1>`
 
-**Contenido original:** `____________________________`
+**Contenido original:** `FORMATOS INSTITUCIONALES `
 
-**Modificación realizada:** `____________________________`
+**Modificación realizada:** `FORMATOS QUE NO SON INSTITUCIONALES `
 
 El proceso observado puede representarse conceptualmente así:
 
@@ -215,6 +221,8 @@ aplicación o los archivos almacenados en el servidor? Justifique.**
 
 > Escriba aquí su respuesta.
 
+No, la modificación realizada sobre el DOM no altera permanentemente la aplicación ni los archivos del servidor. Estos cambios solo se realizan temporalmente en el navegador mediante las herramientas de inspección. Al recargar la página, los cambios desaparecen porque los archivos originales del servidor no fueron modificados.
+
 ------------------------------------------------------------------------
 
 # 5. Análisis de una interacción dinámica
@@ -236,12 +244,12 @@ Observe si aparece una nueva solicitud en Network.
 
   Elemento                       Resultado
   ------------------------------ -----------
-  Acción realizada               
-  ¿Generó una nueva solicitud?   
-  URL solicitada                 
-  Método HTTP                    
-  Código de estado               
-  Tipo de respuesta              
+  Acción realizada               Seleccionar una opción 
+  ¿Generó una nueva solicitud?   sí
+  URL solicitada                 https://www.facebook.com/tr/
+  Método HTTP                    POST
+  Código de estado               200 OK
+  Tipo de respuesta              document-  tr/
 
 ## Ciclo de interacción
 
@@ -279,6 +287,8 @@ solicitud observada.**
 
 > Escriba aquí su respuesta.
 
+La acción realizada por el usuario genera una solicitud HTTP porque el navegador necesita comunicarse con el servidor para obtener o enviar información. Por ejemplo, al presionar un botón de consultar o buscar, el navegador envía la solicitud correspondiente y el servidor responde con los datos necesarios para actualizar la página.
+
 ------------------------------------------------------------------------
 
 # 6. Reconstrucción del flujo observado
@@ -298,7 +308,15 @@ Reemplace el siguiente bloque con su diagrama:
 
 ``` mermaid
 flowchart LR
-    A[Construya aquí] --> B[su flujo observado]
+    Usuario->>Interfaz: Selecciona una opción
+    Interfaz->>DOM: Detecta la acción
+    DOM->>JavaScript: Ejecuta el evento
+    JavaScript->>Navegador: Genera la solicitud HTTP
+    Navegador->>Servidor: Envía la solicitud HTTP (GET/POST)
+    Servidor-->>Navegador: Respuesta HTTP (200 OK)
+    Navegador->>JavaScript: Entrega los datos
+    JavaScript->>DOM: Actualiza el contenido
+    DOM->>Interfaz: Muestra la información al usuario
 ```
 
 ------------------------------------------------------------------------
@@ -312,15 +330,15 @@ Clasifique sus hallazgos:
 
 ## Elementos observados directamente
 
--   
--   
--   
+-   El código de estado de la respuesta en nuestro caso --> 200 ok 
+-   El tiempo de respuesta y el tipo de recurso en la pestaña Network.
+-   La solicitud HTTP enviada al seleccionar una opción.
 
 ## Elementos inferidos
 
--   
--   
--   
+-   El servidor procesa la solicitud antes de responder.
+-   El servidor consulta o genera la información que devuelve.
+-   JavaScript actualiza el dom con la información recibida para reflejar el cambio en la interfaz.
 
 > No presente como observado un proceso interno que las herramientas del
 > navegador no permitan comprobar directamente.
@@ -331,9 +349,9 @@ Clasifique sus hallazgos:
 
 Redacte **tres conclusiones técnicas** derivadas de la práctica.
 
-1.  
-2.  
-3.  
+1.  El análisis de las solicitudes permite identificar información como el método HTTP, código de estado, tipo de respuesta y tiempo de respuesta, elementos que ayudan a determinar cómo se comunica la aplicación con el servidor.
+2.  Las herramientas de desarrollo permiten observar y modificar temporalmente el DOM desde el navegador, pero estos cambios no modifican los archivos originales del servidor.
+3.  La pestaña Network permite comprobar que las acciones realizadas en una aplicación web generan solicitudes HTTP, lo que evidencia la comunicación entre el navegador y el servidor.
 
 Las conclusiones deben explicar lo aprendido a partir de la evidencia y
 no limitarse a describir las actividades realizadas.
