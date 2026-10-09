@@ -8,7 +8,7 @@ Fecha: 9/10/2026
 Sensor asignado: GAS-002
 Tópico MQTT utilizado: MQTT_TOPIC=iot/sensors/GAS-002/data
 
-2. Descripción del Sistema
+2. ## Descripción del Sistema
 
 Magnitudes: ch4, temperature, humidity. 
 
@@ -87,25 +87,6 @@ interpreta como hora de Colombia.
 - `GET /sensores/{id}/mediciones` con `magnitud`, `desde`, `hasta` y `limit`
 - `GET /sensores/{id}/ultima-medicion`
 
-## 3. Magnitudes y unidades recibidas
-
-Sensor: `<sensor_id>`. Datos tomados de `documentacion_payload.md` y de `GET /sensores/{id}/magnitudes`.
-
-| Magnitud (clave en `measurements`) | Unidad | Tipo de `value` | Rango registrado |
-|---|---|---|---|
-| `<magnitud 1>` | `<unidad>` | `<tipo>` | `<mín> a <máx>` |
-| `<magnitud 2>` | `<unidad>` | `<tipo>` | `<mín> a <máx>` |
-| `<magnitud 3>` | `<unidad>` | `<tipo>` | `<mín> a <máx>` |
-
-Observaciones: `<variaciones encontradas, campos extra, magnitudes que a veces faltan>`.
-
-## 4. Payload real del sensor
-
-Capturado de `payloads_recibidos.jsonl` el `<fecha>`, tópico `<tópico>`:
-
-```json
-<pega aquí el payload que imprimió python -m mqtt.mostrar_payload>
-```
 
 ### Estructura
 
@@ -133,7 +114,7 @@ Desde la raíz del proyecto, en PowerShell:
 python -m venv venv
 ```
 
-Si tienes varias versiones de Python, usa `py -3.11 -m venv venv`.
+
 
 ### 2. Activarlo
 
