@@ -36,7 +36,7 @@ def _rango_utc(desde: datetime | None, hasta: datetime | None):
     hasta_utc = a_utc(hasta) if hasta else None
     if desde_utc and hasta_utc and desde_utc > hasta_utc:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, "'desde' no puede ser posterior a 'hasta'"
+            status.HTTP_400_BAD_REQUEST, "'desde' no puede ser posterior a 'hasta'"
         )
     return desde_utc, hasta_utc
 
