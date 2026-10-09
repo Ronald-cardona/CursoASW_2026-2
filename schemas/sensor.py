@@ -1,6 +1,6 @@
-from datetime import datetime
-from enum import Enum
 
+from enum import Enum
+from schemas.tiempo import HoraColombia
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -42,4 +42,4 @@ class SensorResponse(SensorBase):
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
     id: int
-    fecha_registro: datetime
+    fecha_registro_local: HoraColombia = Field(validation_alias="fecha_registro")

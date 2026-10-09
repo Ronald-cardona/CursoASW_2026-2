@@ -5,10 +5,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from api.errores import error_integridad
+from crud import consultas
 from crud import medicion as crud
 from crud import sensor_magnitud as crud_magnitud
 from database import get_db
 from schemas.medicion import MedicionCreate, MedicionResponse, MedicionUpdate
+from schemas.medicion_detalle import MedicionDetalleResponse
+from schemas.tiempo import a_utc
 
 router = APIRouter(prefix="/mediciones", tags=["Mediciones"])
 
@@ -27,29 +30,56 @@ def _magnitud_existe(db: Session, magnitud_id: int):
         )
 
 
-@router.get("/", response_model=list[MedicionResponse])
+def _rango_utc(desde: datetime | None, hasta: datetime | None):
+    """Sin zona horaria = hora de Colombia. Devuelve (desde, hasta) en UTC."""
+    desde_utc = a_utc(desde) if desde else None
+    hasta_utc = a_utc(hasta) if hasta else None
+    if desde_utc and hasta_utc and desde_utc > hasta_utc:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, "'desde' no puede ser posterior a 'hasta'"
+        )
+    return desde_utc, hasta_utc
+
+
+# ---------------------------------------------------------------- consultas
+
+@router.get("/", response_model=list[MedicionDetalleResponse])
 def listar(
+    sensor_id: int | None = Query(None, description="id numérico del sensor"),
+    sensor_magnitud_id: int | None = Query(None, description="id de la magnitud del sensor"),
+    magnitud: str | None = Query(None, description="Nombre de la magnitud, ej. temperature"),
+    desde: datetime | None = Query(
+        None, description="Desde (inclusive). Sin zona horaria = hora de Colombia"
+    ),
+    hasta: datetime | None = Query(
+        None, description="Hasta (inclusive). Sin zona horaria = hora de Colombia"
+    ),
+    limit: int = Query(100, ge=1, le=1000, description="Devuelve las últimas N mediciones"),
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
-    sensor_magnitud_id: int | None = None,
-    desde: datetime | None = Query(None, description="timestamp_utc >= desde"),
-    hasta: datetime | None = Query(None, description="timestamp_utc <= hasta"),
     db: Session = Depends(get_db),
 ):
-    return crud.listar_mediciones(
+    desde_utc, hasta_utc = _rango_utc(desde, hasta)
+    return consultas.buscar_mediciones(
         db,
-        skip=skip,
-        limit=limit,
+        sensor_id=sensor_id,
         sensor_magnitud_id=sensor_magnitud_id,
-        desde=desde,
-        hasta=hasta,
+        magnitud=magnitud,
+        desde=desde_utc,
+        hasta=hasta_utc,
+        limit=limit,
+        skip=skip,
     )
 
 
-@router.get("/{medicion_id}", response_model=MedicionResponse)
+@router.get("/{medicion_id}", response_model=MedicionDetalleResponse)
 def obtener(medicion_id: int, db: Session = Depends(get_db)):
-    return _medicion_o_404(db, medicion_id)
+    medicion = consultas.obtener_medicion_detalle(db, medicion_id)
+    if medicion is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Medición no encontrada")
+    return medicion
 
+
+# ------------------------------------------------------------ escritura
 
 @router.post("/", response_model=MedicionResponse, status_code=status.HTTP_201_CREATED)
 def crear(datos: MedicionCreate, db: Session = Depends(get_db)):

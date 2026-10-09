@@ -1,6 +1,5 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
 from crud.comun import guardar
 from models.sensor_magnitud import SensorMagnitud
 from schemas.sensor_magnitud import SensorMagnitudCreate
@@ -11,10 +10,16 @@ def listar_magnitudes(
     skip: int = 0,
     limit: int = 100,
     sensor_id: int | None = None,
+    magnitud: str | None = None,
+    unidad: str | None = None,
 ) -> list[SensorMagnitud]:
     stmt = select(SensorMagnitud).order_by(SensorMagnitud.id).offset(skip).limit(limit)
     if sensor_id is not None:
         stmt = stmt.where(SensorMagnitud.sensor_id == sensor_id)
+    if magnitud is not None:
+        stmt = stmt.where(SensorMagnitud.magnitud == magnitud)
+    if unidad is not None:
+        stmt = stmt.where(SensorMagnitud.unidad == unidad)
     return list(db.scalars(stmt).all())
 
 

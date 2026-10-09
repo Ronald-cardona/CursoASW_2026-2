@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -5,14 +6,17 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from api.errores import error_integridad
+from crud import consultas
 from crud import sensor as crud_sensor
 from crud import sensor_magnitud as crud
 from database import get_db
+from schemas.medicion_detalle import MedicionDetalleResponse
 from schemas.sensor_magnitud import (
     SensorMagnitudCreate,
     SensorMagnitudResponse,
     SensorMagnitudUpdate,
 )
+from schemas.tiempo import a_utc
 
 router = APIRouter(prefix="/sensor-magnitudes", tags=["Sensor magnitudes"])
 
@@ -46,20 +50,75 @@ def _validar_rango(minimo: Decimal, maximo: Decimal):
         )
 
 
+def _rango_utc(desde: datetime | None, hasta: datetime | None):
+    """Sin zona horaria = hora de Colombia. Devuelve (desde, hasta) en UTC."""
+    desde_utc = a_utc(desde) if desde else None
+    hasta_utc = a_utc(hasta) if hasta else None
+    if desde_utc and hasta_utc and desde_utc > hasta_utc:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, "'desde' no puede ser posterior a 'hasta'"
+        )
+    return desde_utc, hasta_utc
+
+
+# ---------------------------------------------------------------- consultas
+
 @router.get("/", response_model=list[SensorMagnitudResponse])
 def listar(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     sensor_id: int | None = None,
+    magnitud: str | None = Query(None, description="Nombre de la magnitud, ej. temperature"),
+    unidad: str | None = Query(None, description="Unidad, ej. C"),
     db: Session = Depends(get_db),
 ):
-    return crud.listar_magnitudes(db, skip=skip, limit=limit, sensor_id=sensor_id)
+    return crud.listar_magnitudes(
+        db, skip=skip, limit=limit, sensor_id=sensor_id, magnitud=magnitud, unidad=unidad
+    )
 
 
 @router.get("/{magnitud_id}", response_model=SensorMagnitudResponse)
 def obtener(magnitud_id: int, db: Session = Depends(get_db)):
     return _magnitud_o_404(db, magnitud_id)
 
+
+@router.get("/{magnitud_id}/mediciones", response_model=list[MedicionDetalleResponse])
+def listar_mediciones_de_la_magnitud(
+    magnitud_id: int,
+    desde: datetime | None = Query(
+        None, description="Desde (inclusive). Sin zona horaria = hora de Colombia"
+    ),
+    hasta: datetime | None = Query(
+        None, description="Hasta (inclusive). Sin zona horaria = hora de Colombia"
+    ),
+    limit: int = Query(100, ge=1, le=1000, description="Devuelve las últimas N mediciones"),
+    skip: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+):
+    _magnitud_o_404(db, magnitud_id)
+    desde_utc, hasta_utc = _rango_utc(desde, hasta)
+    return consultas.buscar_mediciones(
+        db,
+        sensor_magnitud_id=magnitud_id,
+        desde=desde_utc,
+        hasta=hasta_utc,
+        limit=limit,
+        skip=skip,
+    )
+
+
+@router.get("/{magnitud_id}/ultima-medicion", response_model=MedicionDetalleResponse)
+def ultima_medicion_de_la_magnitud(magnitud_id: int, db: Session = Depends(get_db)):
+    _magnitud_o_404(db, magnitud_id)
+    medicion = consultas.ultima_medicion_de_magnitud(db, magnitud_id)
+    if medicion is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, "La magnitud no tiene mediciones registradas"
+        )
+    return medicion
+
+
+# ------------------------------------------------------------ escritura
 
 @router.post("/", response_model=SensorMagnitudResponse, status_code=status.HTTP_201_CREATED)
 def crear(datos: SensorMagnitudCreate, db: Session = Depends(get_db)):
